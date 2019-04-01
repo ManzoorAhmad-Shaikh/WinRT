@@ -1,0 +1,3 @@
+Log file successfully created
+Initialization Successful
+Successfully closed
