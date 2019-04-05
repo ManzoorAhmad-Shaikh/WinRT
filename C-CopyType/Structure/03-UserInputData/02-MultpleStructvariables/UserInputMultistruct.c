@@ -1,0 +1,50 @@
+#include<stdio.h>
+
+struct MyPoint
+{
+	int x;
+	int y;
+};
+
+
+int main(void)
+{
+	
+	struct MyPoint point_A,point_B,point_C,point_D,point_E;
+	
+	printf("\n\n Enter X-Coordinate For Point 'A' : ");
+	scanf("%d",&point_A.x);
+	printf("\n\n Enter Y-Coordinate For Point 'A' : ");
+	scanf("%d",&point_A.y);
+	
+	printf("\n\n Enter X-Coordinate For Point 'B' : ");
+	scanf("%d",&point_B.x);
+	printf("\n\n Enter Y-Coordinate For Point 'B' : ");
+	scanf("%d",&point_B.y);
+		
+	printf("\n\n Enter X-Coordinate For Point 'C' : ");
+	scanf("%d",&point_C.x);
+	printf("\n\n Enter Y-Coordinate For Point 'C' : ");
+	scanf("%d",&point_C.y);
+		
+	printf("\n\n Enter X-Coordinate For Point 'D' : ");
+	scanf("%d",&point_D.x);
+	printf("\n\n Enter Y-Coordinate For Point 'D' : ");
+	scanf("%d",&point_D.y);
+	
+	printf("\n\n Enter X-Coordinate For Point 'E' : ");
+	scanf("%d",&point_E.x);
+	printf("\n\n Enter Y-Coordinate For Point 'E' : ");
+	scanf("%d",&point_E.y);
+	
+
+	
+	printf("\n\n Co-ordinate (x,y) of point 'A' Are : (%d,%d)\n",point_A.x,point_A.y);
+	printf("\n\n Co-ordinate (x,y) of point 'B' Are : (%d,%d)\n",point_B.x,point_B.y);
+	printf("\n\n Co-ordinate (x,y) of point 'C' Are : (%d,%d)\n",point_C.x,point_C.y);
+	printf("\n\n Co-ordinate (x,y) of point 'D' Are : (%d,%d)\n",point_D.x,point_D.y);
+	printf("\n\n Co-ordinate (x,y) of point 'E' Are : (%d,%d)\n",point_E.x,point_E.y);			
+
+return(0);
+
+}
