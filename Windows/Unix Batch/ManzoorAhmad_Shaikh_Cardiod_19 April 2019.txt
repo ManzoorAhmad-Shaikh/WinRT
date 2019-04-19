@@ -1,0 +1,8 @@
+Demo Name : Cardiod.
+Name : Manzoor Ahmad Farukh Shaikh
+Batch : RTR 2018-19-20
+Group Name : Matrix.
+Description : It is a mathematical pattern formed by lines. The patterns are Cardiod,Nephroid and etc.
+		OpenGL is used to draw the lines.
+
+Hashtags : #AstroMediComp #AMC #WinRT #Cardiod
