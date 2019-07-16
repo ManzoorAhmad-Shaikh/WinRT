@@ -47,6 +47,10 @@ typedef struct node{
 	float yRotate;
 	float zRotate;
 	
+	//color
+	float r;
+	float g;
+	float b;
 	//angle of rotation
 	float angle;
 	struct node *rchild;
@@ -55,7 +59,7 @@ typedef struct node{
 
 void Insert(PPNODE tree,float xCoord,float yCoord,float x1Coord,float y1Coord,
 			float xTranslate,float yTranslate,float zTranslate,	float xRotate,
-			float yRotate,float zRotate,float angle,int level)
+			float yRotate,float zRotate,float r,float g,float b,float angle,int level)
 {
 	PNODE node = NULL;
 	
@@ -72,6 +76,9 @@ void Insert(PPNODE tree,float xCoord,float yCoord,float x1Coord,float y1Coord,
 		node->xRotate = xRotate;
 		node->yRotate = yRotate;
 		node->zRotate = zRotate;
+		node->r = r;
+		node->g = g;
+		node->b = b;
 		node->angle = angle;
 		*tree = node;
 		return;
@@ -79,9 +86,9 @@ void Insert(PPNODE tree,float xCoord,float yCoord,float x1Coord,float y1Coord,
 	
 	if(level<3){
 		Insert(&((*tree)->lchild),xCoord,x1Coord,yCoord,y1Coord,xTranslate,yTranslate,
-				zTranslate,xRotate,yRotate,zRotate,angle,level + 1);
+				zTranslate,xRotate,yRotate,zRotate,r,g,b,angle,level + 1);
 		Insert(&((*tree)->rchild),xCoord,x1Coord,yCoord,y1Coord,xTranslate,yTranslate,
-				zTranslate,xRotate,yRotate,zRotate,angle,level + 1);
+				zTranslate,xRotate,yRotate,zRotate,r,g,b,-45.0f,level + 1);
 	}
 	else{
 		return;
@@ -182,11 +189,19 @@ int WINAPI WinMain(HINSTANCE hInstance,HINSTANCE hPrevInstance,LPSTR lpszCmdline
 	SetFocus(hwnd);
 	Insert(&root,0.0f,-1.0f,0.0f,0.0f,
 			0.0f,0.0f,0.0f,
-			0.0f,0.0f,0.0f,0.0f,0);
+			0.0f,0.0f,1.0f,1.0f,0.0f,0.f,0.0f,0);
 	
 	Insert(&root,0.0f,0.0f,0.0f,0.5f,
 			0.0f,0.0f,0.0f,
-			0.0f,0.0f,1.0f,90.0f,0);
+			0.0f,0.0f,1.0f,0.0f,1.0f,0.0f,45.0f,0);
+			
+	Insert(&root,0.0f,0.0f,0.0f,0.3f,
+			0.0f,0.5f,0.0f,
+			0.0f,0.0f,1.0f,0.0f,0.0f,1.0f,45.0f,0);
+			
+	Insert(&root,0.0f,0.0f,0.0f,0.15f,
+			0.0f,0.3f,0.0f,
+			0.0f,0.0f,1.0f,1.0f,1.0f,0.0f,45.0f,0);
 	//Game Loop
 	while(bDone == false)
 	{
@@ -380,32 +395,87 @@ void resize(int width,int height)
 
 void Preorder(PNODE tree)
 {
-	if(tree!=NULL){
+	static int flag = 0,flag1 = 0;
 	
+	if(tree!=NULL){
+		glPushMatrix();
+		glTranslatef(tree->xTranslate,tree->yTranslate,tree->zTranslate);
 		glRotatef(tree->angle,tree->xRotate,tree->yRotate,tree->zRotate);
-		glColor3f(1.0f,1.0f,0.0f);
+		//glTranslatef(tree->xTranslate,tree->yTranslate,tree->zTranslate);
+		//if(flag == 0){
+			glBegin(GL_LINES);
+			//flag = 1;
+		//}
+		glColor3f(tree->r,tree->g,tree->b);
 		glVertex3f(tree->xCoord,tree->yCoord,0.0f);
-		glColor3f(1.0f,1.0f,0.0f);
+		glColor3f(tree->r,tree->g,tree->b);
 		glVertex3f(tree->x1Coord,tree->y1Coord,0.0f);
+		glEnd();
+		
 		Preorder(tree->lchild);
 		Preorder(tree->rchild);
+		glPopMatrix();
 	}
 	
 }
 void display(PNODE tree)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	glTranslatef(0.0f, 0.0f, -3.0f);
+	int static flag = 0;
+	if(flag == 0){
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+		glTranslatef(0.0f, 0.0f, -3.0f);
+		//flag = 1;
+	}
 	//glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
 	if(tree!=NULL){
-//	glRotatef(tree->angle,tree->xRotate,tree->yRotate,tree->zRotate);
-		glBegin(GL_LINES);
+	//glRotatef(tree->angle,tree->xRotate,tree->yRotate,tree->zRotate);
+		
 			
 		Preorder(tree);
-		glEnd();
+		//glEnd();
 	}
+	/*
+glRotatef(tree->angle,tree->xRotate,tree->yRotate,tree->zRotate);
+	glBegin(GL_LINES);
+		
+		glColor3f(1.0f,1.0f,0.0f);
+		glVertex3f(tree->xCoord,tree->yCoord,0.0f);
+		glColor3f(1.0f,1.0f,0.0f);
+		glVertex3f(tree->x1Coord,tree->y1Coord,0.0f);
+		
+	glEnd();
+	//glRotatef(tree->rchild->angle,tree->rchild->xRotate,tree->rchild->yRotate,tree->rchild->zRotate);
+	glRotatef(tree->lchild->angle,tree->lchild->xRotate,tree->lchild->yRotate,tree->lchild->zRotate);
+	glBegin(GL_LINES);
+		glColor3f(1.0f,0.0f,0.0f);
+		glVertex3f(tree->lchild->xCoord,tree->lchild->yCoord,0.0f);
+		glColor3f(1.0f,0.0f,0.0f);
+		glVertex3f(tree->lchild->x1Coord,tree->lchild->y1Coord,0.0f);
+		
+		
+	glEnd();
+	glTranslatef(1.0f,0.0f,0.0f);
+	//glRotatef(tree->rchild->lchild->angle,tree->rchild->lchild->xRotate,tree->rchild->lchild->yRotate,tree->rchild->lchild->zRotate);
+	glBegin(GL_LINES);
+		glColor3f(0.0f,1.0f,0.0f);
+		glVertex3f(tree->rchild->lchild->xCoord,tree->rchild->lchild->yCoord,0.0f);
+		glColor3f(0.0f,1.0f,0.0f);
+		glVertex3f(tree->rchild->lchild->x1Coord,tree->rchild->lchild->y1Coord,0.0f);
+		
+		
+	glEnd();
+	*/ /*
+	glRotatef(tree->rchild->lchild->angle,tree->rchild->lchild->xRotate,tree->rchild->lchild->yRotate,tree->rchild->lchild->zRotate);
+	glBegin(GL_LINES);
+		glColor3f(1.0f,0.0f,0.0f);
+		glVertex3f(tree->rchild->rchild->xCoord,tree->rchild->rchild->yCoord,0.0f);
+		glColor3f(1.0f,0.0f,0.0f);
+		glVertex3f(tree->rchild->rchild->xCoord,tree->rchild->rchild->yCoord,0.0f);
+		
+		
+	glEnd();*/
 	SwapBuffers(ghdc);
 }
 void update(void){
