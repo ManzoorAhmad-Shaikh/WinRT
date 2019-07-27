@@ -7,11 +7,12 @@
 #include<X11/Xutil.h>
 #include<X11/XKBlib.h>
 #include<X11/keysym.h>
-
+#include "OGL.h"
 //opengl
 #include<GL/gl.h>
 #include<GL/glx.h>
 #include<GL/glu.h>
+#include "OGL.h"
 //namespaces
 using namespace std;
 
@@ -24,10 +25,14 @@ Colormap gColormap;
 Window gWindow;
 int giWindowWidth = 800;
 int giWindowHeight = 600;
-float angleRotate = 0.0f;
+float angle = 0.0f;
 GLXContext gGLXContext;
-int shoulder = 0,elbow = 0;
-GLUquadric *quadricShoulder,*quadricElbow;
+
+bool bLight = false;
+GLfloat LightAmbient[] = {0.5f,0.5f,0.5f,1.0f};
+GLfloat LightDiffuse[] = {1.0f,1.0f,1.0f,1.0f};
+GLfloat LightSpecular[] = {1.0f,1.0f,1.0f,1.0f};
+GLfloat LightPosition[] = {0.0f,0.0f,0.0f,1.0f};
 //entry -point function
 int main(void){
 	//function declaration
@@ -35,7 +40,7 @@ int main(void){
 	void CreateWindow(void);
 	void ToggleFullscreen(void);
 	void uninitialize();
-	//void update(void);
+	void update(void);
 	//opengl
 
 	void initialize();
@@ -85,14 +90,17 @@ int main(void){
 								bFullscreen = false;
 							}
 							break;
-						case 'S' : shoulder = (shoulder + 3)%360;
+						case 'L':
+						case 'l':
+							if(bLight == false){
+								bLight = true;
+								glEnable(GL_LIGHTING);
+							}
+							else{
+								bLight = false;
+								glDisable(GL_LIGHTING);
+							}
 							break;
-						case 's' : shoulder = (shoulder - 3)%360;
-									break;
-						case 'E' : elbow = (elbow + 3)%360;
-									break;
-						case 'e' : elbow = (elbow - 3)%360;
-									break;
 						default:
 							break;
 						}
@@ -137,7 +145,7 @@ int main(void){
 		}
 		//disp
 		//update
-		//update();
+		update();
 		display();	
 	}
 
@@ -253,14 +261,19 @@ void initialize(void){
 
 	gGLXContext = glXCreateContext(gpDisplay,gpxVisualInfo,NULL,GL_TRUE);
 	glXMakeCurrent(gpDisplay,gWindow,gGLXContext);
-	
 	glShadeModel(GL_SMOOTH);
 	glClearDepth(1.0f);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glClearColor(0.0f,0.0f,0.0f,1.0f);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
-		
+	glClearColor(0.0f,0.0f,0.0f,1.0f);
+	//Light
+	glLightfv(GL_LIGHT0,GL_AMBIENT,LightAmbient);
+	glLightfv(GL_LIGHT0,GL_DIFFUSE,LightDiffuse);
+	glLightfv(GL_LIGHT0,GL_DIFFUSE,LightSpecular);
+	glLightfv(GL_LIGHT0,GL_POSITION,LightPosition);
+	glEnable(GL_LIGHT0);
 	resize(giWindowWidth,giWindowHeight);
 }
 
@@ -280,39 +293,37 @@ void display(void){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
-	glColor3f(0.5f,0.35f,0.05f);
-	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+	glTranslatef(0.0f, 0.0f, -1.5f);
+	glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+	glRotatef(angle, 0.0f, 0.0f, 1.0f); 
+	//glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+	glBegin(GL_TRIANGLES);
+	for (int i = 0; i<sizeof(face_indicies) / sizeof(face_indicies[0]); i++)
+	{
+		for (int j = 0; j<3; j++)
+		{
+			int vi = face_indicies[i][j];
+			int ni = face_indicies[i][j + 3]; //Normal index
+			int ti = face_indicies[i][j + 6]; //Texture index
+			glNormal3f(normals[ni][0], normals[ni][1], normals[ni][2]);
+			//glTexCoord2f(textures[ti][0], textures[ti][1]);
+			glVertex3f(vertices[vi][0], vertices[vi][1], vertices[vi][2]);
+		}
+	}
+	glEnd();
 	
-	glTranslatef(0.0f,0.0f,-12.0f);
-	glPushMatrix();
-	
-	glRotatef((GLfloat)shoulder,0.0f,0.0f,1.0f);
-	glTranslatef(1.0f,0.0f,0.0f);
-	glPushMatrix();
-	
-	glScalef(2.0f,0.5f,1.0f);
-	
-	quadricShoulder = gluNewQuadric();
-	gluSphere(quadricShoulder,0.5f,10,10);
-	glPopMatrix();
-	
-	glTranslatef(1.0f,0.0f,0.0f);
-	glRotatef((GLfloat)elbow,0.0f,0.0f,1.0f);
-	glTranslatef(1.0f,0.0f,0.0f);
-	glPushMatrix();
-	glScalef(2.0f,0.5f,1.0f);
-	
-	quadricElbow = gluNewQuadric();
-	
-	gluSphere(quadricElbow,0.5f,10,10);
-	glPopMatrix();
-	glPopMatrix();
 	glXSwapBuffers(gpDisplay,gWindow);
 }
+
+void update(void){
+	angle = angle +0.5f;
+	if(angle >=360.0f){
+		angle = 0.0f;
+	}
+
+}
 void uninitialize(void){
-	gluDeleteQuadric(quadricElbow);
-	gluDeleteQuadric(quadricShoulder);
+
 	GLXContext currentGLXContext = glXGetCurrentContext();
 	if(currentGLXContext != NULL && currentGLXContext == gGLXContext){
 		glXMakeCurrent(gpDisplay,0,0);	

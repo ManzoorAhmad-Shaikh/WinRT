@@ -16,7 +16,12 @@
 using namespace std;
 
 //global variables
-
+struct Light{
+	GLfloat LightAmbient[4];
+	GLfloat LightDiffuse[4];
+	GLfloat LightSpecular[4];
+	GLfloat LightPosition[4];
+};
 bool bFullscreen = false;
 Display *gpDisplay = NULL;
 XVisualInfo *gpxVisualInfo = NULL;
@@ -26,8 +31,27 @@ int giWindowWidth = 800;
 int giWindowHeight = 600;
 float angleRotate = 0.0f;
 GLXContext gGLXContext;
-int shoulder = 0,elbow = 0;
-GLUquadric *quadricShoulder,*quadricElbow;
+
+bool bLight = false;
+//Lights
+struct Light light[2] = {{{0.0f,0.0f,0.0f,1.0f},{1.0f,0.0f,0.0f,1.0f},{1.0f,0.0f,0.0f,1.0f},{-2.0f,0.0f,0.0f,1.0f}},
+			{{0.0f,0.0f,0.0f,1.0f},{0.0f,0.0f,1.0f,1.0f},{0.0f,0.0f,1.0f,1.0f},{2.0f,0.0f,0.0f,1.0f}}};
+						
+GLfloat LightAmbientZero[] = {0.0f,0.0f,0.0f,1.0f};
+GLfloat LightDiffuseZero[] = {1.0f,0.0f,0.0f,1.0f};
+GLfloat LightSpecularZero[] = {1.0f,0.0f,0.0f,1.0f};
+GLfloat LightPositionZero[] = {-2.0f,0.0f,0.0f,1.0f};
+
+GLfloat LightAmbientOne[] = {0.0f,0.0f,0.0f,1.0f};
+GLfloat LightDiffuseOne[] = {0.0f,0.0f,1.0f,1.0f};
+GLfloat LightSpecularOne[] = {0.0f,0.0f,1.0f,1.0f};
+GLfloat LightPositionOne[] = {2.0f,0.0f,0.0f,1.0f};
+
+GLfloat MaterialAmbient [] = {0.0f,0.0f,0.0f,1.0f};
+GLfloat MaterialDiffuse [] = {1.0f,1.0f,1.0f,1.0f};
+GLfloat MaterialSpecular [] = {1.0f,1.0f,1.0f,1.0f};
+GLfloat MaterialShininess[] = {128.0f};
+
 //entry -point function
 int main(void){
 	//function declaration
@@ -35,7 +59,7 @@ int main(void){
 	void CreateWindow(void);
 	void ToggleFullscreen(void);
 	void uninitialize();
-	//void update(void);
+	void update(void);
 	//opengl
 
 	void initialize();
@@ -85,14 +109,17 @@ int main(void){
 								bFullscreen = false;
 							}
 							break;
-						case 'S' : shoulder = (shoulder + 3)%360;
+						case 'L':
+						case 'l':
+							if(bLight == false){
+								bLight = true;
+								glEnable(GL_LIGHTING);
+							}
+							else{
+								bLight = false;
+								glDisable(GL_LIGHTING);
+							}
 							break;
-						case 's' : shoulder = (shoulder - 3)%360;
-									break;
-						case 'E' : elbow = (elbow + 3)%360;
-									break;
-						case 'e' : elbow = (elbow - 3)%360;
-									break;
 						default:
 							break;
 						}
@@ -137,7 +164,7 @@ int main(void){
 		}
 		//disp
 		//update
-		//update();
+		update();
 		display();	
 	}
 
@@ -253,14 +280,37 @@ void initialize(void){
 
 	gGLXContext = glXCreateContext(gpDisplay,gpxVisualInfo,NULL,GL_TRUE);
 	glXMakeCurrent(gpDisplay,gWindow,gGLXContext);
-	
 	glShadeModel(GL_SMOOTH);
 	glClearDepth(1.0f);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glClearColor(0.0f,0.0f,0.0f,1.0f);
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT,GL_NICEST);
-		
+	glClearColor(0.0f,0.0f,0.0f,1.0f);
+	//Light
+	/*glLightfv(GL_LIGHT0,GL_AMBIENT,LightAmbientZero);
+	glLightfv(GL_LIGHT0,GL_DIFFUSE,LightDiffuseZero);
+	glLightfv(GL_LIGHT0,GL_SPECULAR,LightSpecular);	
+	glLightfv(GL_LIGHT0,GL_POSITION,LightPositionZero);
+	glEnable(GL_LIGHT0);
+	
+	glLightfv(GL_LIGHT1,GL_AMBIENT,LightAmbientOne);
+	glLightfv(GL_LIGHT1,GL_DIFFUSE,LightDiffuseOne);
+	glLightfv(GL_LIGHT1,GL_SPECULAR,LightSpecular);
+	glLightfv(GL_LIGHT1,GL_POSITION,LightPositionOne);
+	glEnable(GL_LIGHT1);*/
+	
+	glLightfv(GL_LIGHT0,GL_AMBIENT,light[0].LightAmbient);
+	glLightfv(GL_LIGHT0,GL_DIFFUSE,light[0].LightDiffuse);
+	glLightfv(GL_LIGHT0,GL_SPECULAR,light[0].LightSpecular);	
+	glLightfv(GL_LIGHT0,GL_POSITION,light[0].LightPosition);
+	glEnable(GL_LIGHT0);
+	
+	glLightfv(GL_LIGHT1,GL_AMBIENT,light[1].LightAmbient);
+	glLightfv(GL_LIGHT1,GL_DIFFUSE,light[1].LightDiffuse);
+	glLightfv(GL_LIGHT1,GL_SPECULAR,light[1].LightSpecular);
+	glLightfv(GL_LIGHT1,GL_POSITION,light[1].LightPosition);
+	glEnable(GL_LIGHT1);
 	resize(giWindowWidth,giWindowHeight);
 }
 
@@ -280,39 +330,44 @@ void display(void){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
-	glColor3f(0.5f,0.35f,0.05f);
-	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+	glTranslatef(0.0f,0.0f,-4.0f);
+	glRotatef(angleRotate,0.0f,1.0f,0.0f);
+	glBegin(GL_TRIANGLES);
 	
-	glTranslatef(0.0f,0.0f,-12.0f);
-	glPushMatrix();
+	glNormal3f(0.0f,0.447214f,0.894427f);
+	glVertex3f(0.0f,1.0f,0.0f);
+	glVertex3f(-1.0f,-1.0f,1.0f);
+	glVertex3f(1.0f,-1.0f,1.0f);
 	
-	glRotatef((GLfloat)shoulder,0.0f,0.0f,1.0f);
-	glTranslatef(1.0f,0.0f,0.0f);
-	glPushMatrix();
+	glNormal3f(0.894427f, 0.447214f, 0.0f);
+	glVertex3f(0.0f,1.0f,0.0f);
+	glVertex3f(1.0f,-1.0f,1.0f);
+	glVertex3f(1.0f,-1.0f,-1.0f);
 	
-	glScalef(2.0f,0.5f,1.0f);
+	glNormal3f(0.0f, 0.447214f, -0.894427f);
+	glVertex3f(0.0f,1.0f,0.0f);
+	glVertex3f(1.0f,-1.0f,-1.0f);
+	glVertex3f(-1.0f,-1.0f,-1.0f);
 	
-	quadricShoulder = gluNewQuadric();
-	gluSphere(quadricShoulder,0.5f,10,10);
-	glPopMatrix();
+	glNormal3f(-0.894427f, 0.447214f, 0.0f);
+	glVertex3f(0.0f,1.0f,0.0f);	
+	glVertex3f(-1.0f,-1.0f,-1.0f);
+	glVertex3f(-1.0f,-1.0f,1.0f);
 	
-	glTranslatef(1.0f,0.0f,0.0f);
-	glRotatef((GLfloat)elbow,0.0f,0.0f,1.0f);
-	glTranslatef(1.0f,0.0f,0.0f);
-	glPushMatrix();
-	glScalef(2.0f,0.5f,1.0f);
+	glEnd();
 	
-	quadricElbow = gluNewQuadric();
-	
-	gluSphere(quadricElbow,0.5f,10,10);
-	glPopMatrix();
-	glPopMatrix();
 	glXSwapBuffers(gpDisplay,gWindow);
 }
+
+void update(void){
+	angleRotate = angleRotate +0.2f;
+	if(angleRotate >=360.0f){
+		angleRotate = 0.0f;
+	}
+
+}
 void uninitialize(void){
-	gluDeleteQuadric(quadricElbow);
-	gluDeleteQuadric(quadricShoulder);
+
 	GLXContext currentGLXContext = glXGetCurrentContext();
 	if(currentGLXContext != NULL && currentGLXContext == gGLXContext){
 		glXMakeCurrent(gpDisplay,0,0);	
