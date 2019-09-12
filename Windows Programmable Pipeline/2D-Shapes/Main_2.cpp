@@ -317,7 +317,7 @@ int initialize(void)
 	gVertex_Shader_Object = glCreateShader(GL_VERTEX_SHADER);
 
 	//Define VS code
-	const GLchar *VertexShaderCode = "#version 430 core" \
+	const GLchar *VertexShaderCode = "#version 450 core" \
 		"\n" \
 		"in vec4 vPosition;" \
 		"uniform mat4 u_mvp_matrix;" \
@@ -327,7 +327,7 @@ int initialize(void)
 		" } ";
 
 	//Specify code to Obj
-	glShaderSource(gShader_Program_Object,
+	glShaderSource(gVertex_Shader_Object,
 		1,
 		(const GLchar**)&VertexShaderCode,
 		NULL);
@@ -335,7 +335,7 @@ int initialize(void)
 	//Compile the shader
 	glCompileShader(gVertex_Shader_Object);
 
-		//Error Code for VS
+	//Error Code for VS
 		glGetShaderiv(gVertex_Shader_Object,
 			GL_COMPILE_STATUS,
 			&iShaderCompileStatus);
@@ -369,16 +369,16 @@ int initialize(void)
 	gFragment_Shader_Object = glCreateShader(GL_FRAGMENT_SHADER);
 
 	//Define FS code
-	const GLchar *FragmentShaderCode = "#version 430 core" \
+	const GLchar *FragmentShaderCode = "#version 450 core" \
 		"\n" \
 		"out vec4 fragColor;" \
 		"void main(void)" \
 		" { " \
-		"fragColor = vec4(1.0,1.0,1.0,1.0)" \
+		"fragColor = vec4(1.0,1.0,1.0,1.0);" \
 		" } ";
 
 	//Specify code to Obj
-	glShaderSource(gShader_Program_Object, 1,
+	glShaderSource(gFragment_Shader_Object, 1,
 		(GLchar**)&FragmentShaderCode, NULL);
 
 	//Compile the shader
@@ -443,7 +443,7 @@ int initialize(void)
 					GLsizei Written;
 					glGetProgramInfoLog(gShader_Program_Object, iInfoLogLength, &Written, szInfoLog);
 
-					fprintf(gpFile, "\n  Failed in Shader Program Linking");
+					fprintf(gpFile, "\n  Failed in Shader Program Linking%s\n", szInfoLog);
 					free(szInfoLog);
 					uninitialize();
 					DestroyWindow(ghwnd);
@@ -541,13 +541,13 @@ void display(void)
 	//do necessary matrix multiplication
 	modelViewProjectionMatrix = perspectiveProjectionMatrix*modelViewMatrix;
 	
-	/*glUniformMatrix4fv(mvpUniform,1,GL_FALSE,modelViewProjectionMatrix);
+	glUniformMatrix4fv(mvpUniform,1,GL_FALSE,modelViewProjectionMatrix);
 	glBindVertexArray(vao_triangle);
 	
 	glDrawArrays(GL_TRIANGLES,0,3);
 	glBindVertexArray(0);
 	//glUseProgram(0);
-	*/
+	
 	//Square
 	modelViewMatrix = mat4::identity();
 	modelViewProjectionMatrix = mat4::identity();
@@ -563,6 +563,7 @@ void display(void)
 	glBindVertexArray(0);
 	//code
 	glUseProgram(0);
+
 	SwapBuffers(ghdc);
 }
 void uninitialize(void)
