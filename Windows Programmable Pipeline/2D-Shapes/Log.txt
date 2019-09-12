@@ -1,0 +1,3 @@
+Log file successfully created
+
+  Failed in Vertex ShaderSuccessfully closed
