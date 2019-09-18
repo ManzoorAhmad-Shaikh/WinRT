@@ -454,6 +454,7 @@ int initialize(void)
 	glAttachShader(gShader_Program_Object, gFragment_Shader_Object);
 	
 	glBindAttribLocation(gShader_Program_Object,AMC_ATTRIBUTE_POSITION,"vPosition");
+	glBindAttribLocation(gShader_Program_Object, AMC_ATTRIBUTE_TEXCOORD0, "vTexCoords");
 	//Link SP
 	glLinkProgram(gShader_Program_Object);
 
@@ -660,9 +661,9 @@ int initialize(void)
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	perspectiveProjectionMatrix = mat4::identity();
 	glEnable(GL_TEXTURE_2D);
-	//LoadTexture(&texture_stone, MAKEINTRESOURCE(IDBITMAP_STONE));
-	//LoadTexture(&texture_kundali, MAKEINTRESOURCE(IDBITMAP_KUNDALI));
-	LoadGLTextures(&texture_stone, MAKEINTRESOURCE(IDBITMAP_STONE));
+	LoadTexture(&texture_stone, MAKEINTRESOURCE(IDBITMAP_STONE));
+	LoadTexture(&texture_kundali, MAKEINTRESOURCE(IDBITMAP_KUNDALI));
+	
 	resize(WIN_WIDTH, WIN_HEIGHT);
 	return 0;
 }
@@ -680,47 +681,7 @@ void resize(int width, int height)
 	perspectiveProjectionMatrix = perspective(45.0f,((GLfloat)width/(GLfloat)height),0.1f,100.0f);
 
 }
-int LoadGLTextures(GLuint *texture, TCHAR imageResourceId[])
-{
-	//variable declarations
-	HBITMAP hBitmap = NULL;
-	BITMAP bmp;
-	int iStatus = FALSE;
 
-	//code
-	hBitmap = (HBITMAP)LoadImage(GetModuleHandle(NULL), imageResourceId, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-	glGenTextures(1, texture);
-
-	if (hBitmap)
-	{
-		iStatus = TRUE;
-		GetObject(hBitmap, sizeof(bmp), &bmp);
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);	// Set 1 rather than default 4 for better performance
-
-		//Texture steps:
-		glBindTexture(GL_TEXTURE_2D, *texture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-		//Generate mipmapped texture
-		glTexImage2D(GL_TEXTURE_2D,
-			0,
-			GL_RGB,
-			bmp.bmWidth,
-			bmp.bmHeight,
-			0,
-			GL_BGR,
-			GL_UNSIGNED_BYTE,
-			bmp.bmBits);
-
-		// Create mipmaps for this texture for better image quality:
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		DeleteObject(hBitmap);
-	}
-	return(iStatus);
-
-}
 BOOL LoadTexture(GLuint *texture, TCHAR imageResourceID[]) {
 	HBITMAP hBitmap = NULL;
 	BITMAP bmp;
@@ -805,7 +766,7 @@ void display(void)
 
 	glUniformMatrix4fv(mvpUniform, 1, GL_FALSE, modelViewProjectionMatrix);
 	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture_stone);
+	glBindTexture(GL_TEXTURE_2D, texture_kundali);
 	glUniform1i(sampleUniform, 0);
 	glBindVertexArray(vao_square);
 
